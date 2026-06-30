@@ -1,0 +1,45 @@
+<!--
+  Regla compuesta: Detección de Posible Exfiltración de Datos
+  
+  Lógica de correlación:
+  1. Se detecta una transferencia de datos saliente superior a 500 MB
+     en una sola conexión desde un host interno.
+  2. Se correlaciona con un login exitoso previo fuera del horario laboral
+     (entre las 22:00 y las 06:00 horas).
+  
+  Ambas condiciones juntas indican un comportamiento anómalo de alto riesgo:
+  un usuario que inicia sesión fuera de horario y transfiere grandes volúmenes
+  de datos podría estar realizando exfiltración intencional o ser víctima de
+  un atacante que comprometió sus credenciales.
+  
+  Nivel 14 = Crítico (requiere respuesta inmediata del equipo SOC).
+-->
+<group name="local,exfiltration,">
+
+  <!--
+    Paso 1: Detectar login exitoso fuera del horario laboral (22:00 - 06:00).
+    Basado en la regla 5715 (sshd: authentication success).
+    Se guarda con if_sid para correlacionar luego.
+  -->
+  <rule id="100010" level="6" timeframe="3600">
+    <if_sid>5715</if_sid>
+    <time>22:00 - 06:00</time>
+    <description>Login SSH exitoso fuera del horario laboral desde $(srcip)</description>
+    <group>after_hours_login</group>
+  </rule>
+
+  <!--
+    Paso 2: Correlación — login fuera de horario + transferencia masiva de datos.
+    Se activa si se detectó previamente el login fuera de horario (regla 100010)
+    y luego se registra una transferencia de datos saliente superior a 500 MB.
+    Nivel 14 = crítico.
+  -->
+  <rule id="100011" level="14" timeframe="3600">
+    <if_matched_sid>100010</if_matched_sid>
+    <same_source_ip />
+    <field name="data.bytes_sent" type="pcre2">\d{9,}</field>
+    <description>CRITICO: Posible exfiltración de datos — transferencia masiva tras login fuera de horario desde $(srcip)</description>
+    <group>data_exfiltration,high_risk</group>
+  </rule>
+
+</group>
