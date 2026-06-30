@@ -6,7 +6,7 @@
      en una sola conexión desde un host interno.
   2. Se correlaciona con un login exitoso previo fuera del horario laboral
      (entre las 22:00 y las 06:00 horas).
-  
+   
   Ambas condiciones juntas indican un comportamiento anómalo de alto riesgo:
   un usuario que inicia sesión fuera de horario y transfiere grandes volúmenes
   de datos podría estar realizando exfiltración intencional o ser víctima de
