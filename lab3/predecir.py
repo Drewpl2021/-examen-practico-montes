@@ -26,22 +26,29 @@ scaler = joblib.load(SCALER_PATH)
 
 print(f"Cargando datos desde {CSV_PATH}...")
 df = pd.read_csv(CSV_PATH)
+df = df.dropna()
 
+# Feature engineering (igual que en el entrenamiento)
 df["ratio_bytes"] = df["bytes_sent"] / (df["bytes_recv"] + 1)
 df["bytes_por_segundo"] = df["bytes_sent"] / (df["duration_sec"] + 0.001)
 
-X = scaler.transform(df[features])
+# Transformación logarítmica (igual que en el entrenamiento)
+df_log = df.copy()
+for col in features:
+    df_log[col] = np.log1p(df_log[col].clip(lower=0))
+
+X = scaler.transform(df_log[features])
 scores = model.decision_function(X)
 preds = model.predict(X)
 
 df["anomaly_score"] = scores
 df["prediccion"] = preds
 
-anomalias = df[preds == -1]
+anomalias = df[preds == -1].sort_values("anomaly_score")
 print(f"\nTotal registros analizados: {len(df)}")
 print(f"Anomalías detectadas: {len(anomalias)}")
-print(f"\n{'='*60}")
-print("REGISTROS CLASIFICADOS COMO ANOMALÍA:")
-print(f"{'='*60}")
-print(anomalias[["src_ip","dst_ip","dst_port","protocol",
-                  "bytes_sent","duration_sec","anomaly_score"]].to_string())
+print(f"\n{'='*70}")
+print("REGISTROS CLASIFICADOS COMO ANOMALÍA (ordenados por score):")
+print(f"{'='*70}")
+print(anomalias[["src_ip", "dst_ip", "dst_port", "protocol",
+                  "bytes_sent", "duration_sec", "anomaly_score"]].to_string(index=False))

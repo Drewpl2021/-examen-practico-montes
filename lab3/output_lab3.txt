@@ -1,0 +1,98 @@
+============================================================
+TAREA 3.1 — Exploración y Preprocesamiento
+============================================================
+
+Shape: (10000, 10)
+
+Columnas: ['timestamp', 'src_ip', 'dst_ip', 'dst_port', 'protocol', 'bytes_sent', 'bytes_recv', 'duration_sec', 'packets', 'label']
+
+Estadísticas descriptivas:
+           dst_port    bytes_sent    bytes_recv  duration_sec       packets
+count  10000.000000  1.000000e+04  1.000000e+04  10000.000000  1.000000e+04
+mean    5272.963700  2.815289e+07  4.124360e+05    447.154662  1.605501e+04
+std     7348.395782  3.115671e+08  1.964278e+06   4530.488171  1.672859e+05
+min       21.000000  1.500000e+01  0.000000e+00      0.000000  1.000000e+00
+25%       53.000000  5.544000e+03  1.328800e+04      8.507500  5.000000e+00
+50%     3389.000000  2.233900e+04  5.529050e+04     21.435000  2.400000e+01
+75%     8080.000000  9.478175e+04  2.213258e+05     44.145000  1.100000e+02
+max    65460.000000  4.987050e+09  8.155783e+07  83028.150000  2.939448e+06
+
+Valores nulos por columna:
+timestamp       0
+src_ip          0
+dst_ip          0
+dst_port        0
+protocol        0
+bytes_sent      0
+bytes_recv      0
+duration_sec    0
+packets         0
+label           0
+dtype: int64
+
+Distribución de etiquetas:
+label
+normal     9500
+anomaly     500
+Name: count, dtype: int64
+
+Shape tras eliminar nulos: (10000, 10)
+Shape tras eliminar atípicos extremos: (9980, 10)
+
+Nuevas features creadas: ratio_bytes, bytes_por_segundo
+
+Gráfica EDA guardada: evidencias/SCR-3.1_eda.png
+
+Features usadas: ['bytes_sent', 'bytes_recv', 'duration_sec', 'packets', 'ratio_bytes', 'bytes_por_segundo']
+X shape: (9980, 6)
+
+============================================================
+TAREA 3.2 — Entrenamiento del Modelo
+============================================================
+
+Métricas de evaluación:
+  Precision : 0.6774
+  Recall    : 0.7042
+  F1-Score  : 0.6905
+
+Matriz de confusión:
+[[9339  161]
+ [ 142  338]]
+
+Gráfica métricas guardada: evidencias/SCR-3.2_metricas.png
+
+============================================================
+TAREA 3.3 — Interpretación y Umbral Dinámico
+============================================================
+
+Umbral óptimo: -0.0150
+Mejor F1-Score: 0.6935
+Gráfica umbral-F1 guardada: evidencias/SCR-3.3_umbral_f1.png
+
+Top 10 registros más anómalos:
+          src_ip           dst_ip  dst_port protocol  bytes_sent  bytes_recv  duration_sec  packets  anomaly_score    label
+5258   10.0.2.73     205.91.80.48        80      TCP  4235188534        9595       1943.41  2666007      -0.369489  anomaly
+786   10.0.1.114    178.249.13.75        53      TCP  3385524170       18133        451.40  2532734      -0.366033  anomaly
+9726  10.0.3.174   185.220.101.45       443      TCP  4553566747        1016       2997.88   636658      -0.362591  anomaly
+1066   10.0.2.73   185.220.101.45      8080      TCP  4313654623       13352       2004.06  2182785      -0.360472  anomaly
+6597   10.0.0.93   185.220.101.45      8080      TCP  2739832080       11140        342.89  1882321      -0.360472  anomaly
+5670  10.0.0.218     45.33.32.156       443      UDP  3628053485       19496       1451.84  2563437      -0.358024  anomaly
+3773  10.0.1.114   185.220.101.45      8080      TCP  4602183026       43276        682.60  2052006      -0.357053  anomaly
+4107  10.0.3.174  212.119.120.117      8080      TCP  4330360366       18413       2613.32  2202251      -0.356485  anomaly
+9548   10.0.3.25  116.109.246.236       443      TCP  4360081671       29856       2140.26  2529094      -0.356318  anomaly
+9797  10.0.3.174   185.220.101.45        80      TCP  4630823475       10269       2625.81  1003103      -0.355916  anomaly
+
+Análisis de amenazas (Top 10):
+- Registros con bytes_sent extremadamente altos pueden indicar exfiltración de datos.
+- Conexiones con duration_sec muy elevada sugieren backdoors o tunneling persistente.
+- Combinación de alto bytes_por_segundo + puerto inusual puede ser C2 (Command & Control).
+- Protocolos ICMP con alto volumen sugieren ICMP tunneling para evasión de firewall.
+
+============================================================
+TAREA 3.4 — Exportación del Modelo
+============================================================
+
+Modelo exportado: modelo_anomalias.pkl
+Scaler exportado: scaler.pkl
+
+✓ Lab 3 completado exitosamente.
